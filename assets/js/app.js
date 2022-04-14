@@ -26,8 +26,29 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 
+let hooks = {}
+
+hooks.saveCount = {
+  mounted() {
+    this.handleEvent("saveCount", ({ count }) =>
+      sessionStorage.setItem("count", count)
+    )
+  }
+}
+
+hooks.restore = {
+  mounted() {
+    count = sessionStorage.getItem("count")
+    this.pushEvent("restore", {count: count})
+  }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}})
+
+let liveSocket = new LiveSocket("/live", Socket, {
+  params: {_csrf_token: csrfToken},
+  hooks: hooks,
+})
 
 // Show progress bar on live navigation and form submits
 topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
